@@ -16,7 +16,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n    \"name\": \"test-user\",\r\n    \"email\": \"test-user@gmail.com\",\r\n    \"password\": \"1234\"\r\n}",
+              "raw": "{\r\n    \"name\": \"test-user\",\r\n    \"email\": \"test-user@gmail.com\",\r\n    \"password\": \"12345678\"\r\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -65,7 +65,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n    \"email\": \"test-user@gmail.com\",\r\n    \"password\": \"1234\"\r\n}",
+              "raw": "{\r\n    \"email\": \"test-user@gmail.com\",\r\n    \"password\": \"12345678\"\r\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -169,7 +169,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n    \"amount\": 500\r\n}",
+              "raw": "{\r\n    \"amount\": 100\r\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -198,7 +198,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n    \"amount\": 100\r\n}",
+              "raw": "{\r\n    \"amount\": 10\r\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -266,7 +266,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n    \"toAccountNumber\": \"dfda4964-43de-43c4-a807-b6263a071cbe\",\r\n    \"amount\": 30\r\n}",
+              "raw": "{\r\n    \"toAccountNumber\": \"916964\",\r\n    \"amount\": 30\r\n}",
               "options": {
                 "raw": {
                   "language": "json"
