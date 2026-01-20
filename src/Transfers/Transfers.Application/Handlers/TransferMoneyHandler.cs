@@ -33,8 +33,8 @@ public class TransferMoneyHandler : ITransferMoneyHandler
 
         try
         {
-            await _accountService.DebitAsync(fromAccountId, amount);
-            await _accountService.CreditAsync(toAccount.Id, amount);
+            await _accountService.DebitForTransferAsync(fromAccountId, amount);
+            await _accountService.CreditForTransferAsync(toAccount.Id, amount);
             
             await _transactionRecorder.MarkTransferCompletedAsync(
                 transferResult.FromTransactionId,

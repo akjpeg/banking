@@ -122,6 +122,25 @@ public class AccountService : IAccountService
         
         return MapToDto(account);
     }
+    public async Task DebitForTransferAsync(Guid accountId, decimal amount)
+    {
+        var account = await _repository.GetByIdAsync(accountId)
+                      ?? throw new DomainException($"Account {accountId} not found");
+
+        account.Debit(amount);
+        await _repository.UpdateAsync(account);
+        await _repository.SaveChangesAsync();
+    }
+
+    public async Task CreditForTransferAsync(Guid accountId, decimal amount)
+    {
+        var account = await _repository.GetByIdAsync(accountId)
+                      ?? throw new DomainException($"Account {accountId} not found");
+
+        account.Credit(amount);
+        await _repository.UpdateAsync(account);
+        await _repository.SaveChangesAsync();
+    }
 
     public async Task DeleteAsync(Guid accountId)
     {

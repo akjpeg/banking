@@ -13,6 +13,8 @@ public interface IAccountService
     Task<IReadOnlyList<TransactionDto>> GetAccountTransactionsAsync(Guid accountId);
     Task<AccountDto> DebitAsync(Guid accountId, decimal amount);
     Task<AccountDto> CreditAsync(Guid accountId, decimal amount);
+    Task DebitForTransferAsync(Guid accountId, decimal amount);
+    Task CreditForTransferAsync(Guid accountId, decimal amount);
     Task DeleteAsync(Guid accountId);
 }
 
