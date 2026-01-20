@@ -27,8 +27,8 @@ O projeto segue uma arquitetura de **monolito modular** com separação clara de
 src/
 ├── Api/                          # Camada de API (Controllers, DTOs)
 ├── Accounts/
-│   ├── Accounts.Domain/          # Entidades, interfaces de repositório
-│   ├── Accounts.Application/     # Serviços, lógica de negócio
+│   ├── Accounts.Domain/          # Entidades e regras de domínio
+│   ├── Accounts.Application/     # Serviços, lógica de negócio, interfaces de repositório
 │   └── Accounts.Infrastructure/  # EF Core, implementações de repositório
 ├── AccountTransactions/
 │   ├── AccountTransactions.Domain/
@@ -71,6 +71,21 @@ erDiagram
     }
 ```
 
+### Invariantes
+
+**Account:**
+- Saldo não pode ser negativo
+- Valor de crédito deve ser maior que zero
+- Valor de débito deve ser maior que zero
+- Não é possível debitar mais que o saldo disponível
+- Email deve ser único
+- Número da conta deve ser único
+
+**AccountTransaction:**
+- Valor deve ser maior que zero
+- Não é possível transferir para a mesma conta
+- Transferências e operações de depósito e saque são criadas com status `Pending`
+
 ### Arquitetura do Sistema
 ```mermaid
 flowchart LR
@@ -88,7 +103,7 @@ flowchart LR
 ## Decisões de Design
 
 ### Monolito Modular
-Escolhido uma arquitetura de monolito modular para manter a simplicidade de deployment enquanto mantemos uma separação clara de responsabilidades. Cada módulo (Accounts, AccountTransactions, Transfers) pode ser extraído para um microserviço no futuro, se necessário.
+Foi escolhida uma arquitetura de monolito modular para manter a simplicidade de deployment enquanto mantemos uma separação clara de responsabilidades. Cada módulo (Accounts, AccountTransactions, Transfers) pode ser extraído para um microserviço no futuro, se necessário.
 
 ### Simplificação de Entidades
 A decisão de manter informações de usuário (nome, email) junto das informações de conta foi proposital. Em um sistema bancário real, seria comum separar `User` e `Account` para permitir:
@@ -107,9 +122,6 @@ Implementação de controle de concorrência usando um campo `Version` que é in
 ### Transações Duplicadas para Transferências
 Cada transferência cria duas transações (TransferOut e TransferIn) para que cada conta tenha seu histórico completo de movimentações, facilitando auditoria e consultas.
 
-### Autenticação JWT
-Utilização de JWT (JSON Web Tokens) para autenticação stateless, permitindo escalabilidade horizontal da API sem necessidade de sessões compartilhadas.
-
 ## Melhorias Não Implementadas
 
 Por simplicidade e limitação de tempo, algumas funcionalidades recomendadas para produção não foram implementadas:
@@ -119,7 +131,7 @@ Por simplicidade e limitação de tempo, algumas funcionalidades recomendadas pa
 Não há cache implementado. **Redis** pode ajudar a melhorar performance em consultas de informações frequentes:
 - Consulta de dados de conta (nome, email, número da conta)
 - Histórico de transações (com invalidação a cada nova transação)
-- Validação de tokens JWT
+- Blacklist de tokens JWT
 
 ### Rate Limiting
 
@@ -127,6 +139,46 @@ Não há limitação de requisições, o que expõe a API a riscos:
 - Endpoints públicos (`/login`, `/register`) vulneráveis a ataques de força bruta
 - Possibilidade de sobrecarga do banco com requisições repetidas
 - Sem proteção contra abuso por automação
+
+### Idempotency Keys
+
+Não há controle de idempotência. Endpoints de depósito, saque e transferência deveriam exigir um header `Idempotency-Key` para evitar operações duplicadas em caso de retry ou falha de rede.
+
+### Tratamento Global de Exceções
+
+Não há implementação de middleware global para tratamento de exceções.
+Existem exceções não tratadas no código, o que pode afetar a estabilidade da API.
+A aplicação se beneficiaria de um ponto centralizado para capturar erros, padronizar respostas de erro e evitar a exposição de detalhes internos
+(como stack traces) ao cliente.
+
+### Paginações e filtros
+
+Alguns endpoints, como de listagem de transações podem se beneficiar de paginações e filtros, evitando retorno de grande volume de dados em uma requisição.
+
+### Logs
+
+Não há implementações de logs das operações.
+Para o escopo do projeto isso não é crítico, mas em um ambiente real seriam importantes para observabilidade, auditoria e troubleshooting.
+
+Exemplos de logs relevantes:
+- Criação de conta e login (sem dados sensíveis)
+- Operações financeiras (depósito, saque, transferência)
+- Falhas de autorização e validação
+- Conflitos de concorrência
+
+### Evolução para Microsserviços
+
+A arquitetura modular facilita migração para microsserviços. Principais mudanças:
+
+| Aspecto | Atual (Monolito) | Microsserviços |
+|---------|------------------|----------------|
+| Comunicação | In-process | HTTP/gRPC, mensageria (RabbitMQ) |
+| Banco de dados | Compartilhado | Um banco por serviço |
+| Transações | ACID única | Padrão Saga (consistência eventual) |
+| Deploy | Artefato único | Deploy independente por serviço |
+
+**Desafio principal:** A transferência entre contas atualmente usa uma transação única. Com microsserviços, seria necessário uma atenção para coordenar a transação de forma distribuída.
+
 
 ## Começando
 
@@ -191,49 +243,15 @@ Não há limitação de requisições, o que expõe a API a riscos:
 | GET | `/api/admin/accounts/{id}` | Obter conta por ID |
 | DELETE | `/api/admin/accounts/{id}` | Deletar conta |
 
-## Exemplos de Uso
+**Nota**: estes endpoints não possuem autorização e foram construídos para facilitar testes durante desenvolvimento
 
-### Cadastro
-```bash
-curl -X POST http://localhost:5000/api/accounts/register \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "João Silva",
-    "email": "joao@exemplo.com",
-    "password": "SenhaSegura123"
-  }'
-```
+## Collection do Postman
 
-### Login
-```bash
-curl -X POST http://localhost:5000/api/accounts/login \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "joao@exemplo.com",
-    "password": "SenhaSegura123"
-  }'
-```
+Importe os arquivos na raiz do projeto para o Postman:
+- `Banking.postman_collection.json` - Endpoints da API
+- `Banking.postman_environment.json` - Variáveis de ambiente
 
-### Depósito
-```bash
-curl -X POST http://localhost:5000/api/accounts/me/deposit \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer SEU_TOKEN_JWT" \
-  -d '{
-    "amount": 100.00
-  }'
-```
-
-### Transferência
-```bash
-curl -X POST http://localhost:5000/api/transfers \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer SEU_TOKEN_JWT" \
-  -d '{
-    "toAccountNumber": "123456",
-    "amount": 50.00
-  }'
-```
+Selecione o environment **Banking** no Postman antes de executar os requests.
 
 ## Executando Testes
 ```bash
@@ -246,6 +264,9 @@ dotnet test --verbosity normal
 # Executar projeto específico
 dotnet test tests/Accounts.Domain.Tests
 ```
+**Nota**: Os testes foram desenvolvidos com apoio de ferramentas de IA e
+validados manualmente. Não houve adoção formal de TDD devido ao escopo
+e ao tempo do desafio.
 
 ## Estrutura do Projeto
 ```
