@@ -381,11 +381,7 @@ public class AccountsControllerTests
         SetupAuthenticatedUser(accountId);
 
         _accountServiceMock
-            .Setup(s => s.GetByIdAsync(accountId))
-            .ReturnsAsync(account);
-
-        _transactionRecorderMock
-            .Setup(t => t.GetByAccountIdAsync(accountId))
+            .Setup(s => s.GetAccountTransactionsAsync(accountId))
             .ReturnsAsync(transactions);
 
         // Act
@@ -405,14 +401,14 @@ public class AccountsControllerTests
         SetupAuthenticatedUser(accountId);
 
         _accountServiceMock
-            .Setup(s => s.GetByIdAsync(accountId))
-            .ReturnsAsync((AccountDto?)null);
+            .Setup(s => s.GetAccountTransactionsAsync(accountId))
+            .ThrowsAsync(new KeyNotFoundException($"Account {accountId} not found"));
 
         // Act
         var result = await _sut.GetTransactions();
 
         // Assert
-        result.Should().BeOfType<NotFoundResult>();
+        result.Should().BeOfType<NotFoundObjectResult>();
     }
 
     [Fact]
@@ -454,7 +450,7 @@ public class AccountsControllerTests
         SetupAuthenticatedUser(accountId);
 
         _accountServiceMock
-            .Setup(s => s.GetByIdAsync(accountId))
+            .Setup(s => s.CreditAsync(accountId, request.Amount))
             .ReturnsAsync(updatedAccount);
 
         // Act
@@ -479,15 +475,15 @@ public class AccountsControllerTests
         SetupAuthenticatedUser(accountId);
 
         _accountServiceMock
-            .Setup(s => s.GetByIdAsync(accountId))
+            .Setup(s => s.CreditAsync(accountId, request.Amount))
             .ReturnsAsync(account);
 
         // Act
-        await _sut.Deposit(request);
+        var result = await _sut.Deposit(request);
 
         // Assert
+        result.Should().BeOfType<OkObjectResult>();
         _accountServiceMock.Verify(s => s.CreditAsync(accountId, 100m), Times.Once);
-        _transactionRecorderMock.Verify(t => t.RecordDepositAsync(accountId, 100m), Times.Once);
     }
 
     [Fact]
@@ -557,7 +553,7 @@ public class AccountsControllerTests
         SetupAuthenticatedUser(accountId);
 
         _accountServiceMock
-            .Setup(s => s.GetByIdAsync(accountId))
+            .Setup(s => s.DebitAsync(accountId, request.Amount))
             .ReturnsAsync(updatedAccount);
 
         // Act
@@ -582,15 +578,15 @@ public class AccountsControllerTests
         SetupAuthenticatedUser(accountId);
 
         _accountServiceMock
-            .Setup(s => s.GetByIdAsync(accountId))
+            .Setup(s => s.DebitAsync(accountId, request.Amount))
             .ReturnsAsync(account);
 
         // Act
-        await _sut.Withdraw(request);
+        var result = await _sut.Withdraw(request);
 
         // Assert
+        result.Should().BeOfType<OkObjectResult>();
         _accountServiceMock.Verify(s => s.DebitAsync(accountId, 50m), Times.Once);
-        _transactionRecorderMock.Verify(t => t.RecordWithdrawalAsync(accountId, 50m), Times.Once);
     }
 
     [Fact]

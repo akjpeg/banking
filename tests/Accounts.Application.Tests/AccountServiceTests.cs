@@ -3,6 +3,7 @@ using Accounts.Application.Services;
 using Accounts.Domain.Entities;
 using FluentAssertions;
 using Moq;
+using Shared.Contracts;
 using Shared.Exceptions;
 
 namespace Accounts.Application.Tests.Services;
@@ -10,12 +11,14 @@ namespace Accounts.Application.Tests.Services;
 public class AccountServiceTests
 {
     private readonly Mock<IAccountRepository> _repositoryMock;
+    private readonly Mock<ITransactionRecorder> _transactionRecorderMock;
     private readonly AccountService _sut;
 
     public AccountServiceTests()
     {
         _repositoryMock = new Mock<IAccountRepository>();
-        _sut = new AccountService(_repositoryMock.Object);
+        _transactionRecorderMock = new Mock<ITransactionRecorder>();
+        _sut = new AccountService(_repositoryMock.Object, _transactionRecorderMock.Object);
     }
 
     #region GetByIdAsync Tests

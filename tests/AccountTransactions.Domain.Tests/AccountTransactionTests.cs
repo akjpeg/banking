@@ -26,7 +26,7 @@ public class AccountTransactionTests
         transaction.FromAccountId.Should().BeNull();
         transaction.Amount.Should().Be(amount);
         transaction.Type.Should().Be(TransactionType.Deposit);
-        transaction.Status.Should().Be(AccountTransactionStatus.Completed);
+        transaction.Status.Should().Be(AccountTransactionStatus.Pending);
     }
 
     [Fact]
@@ -116,7 +116,7 @@ public class AccountTransactionTests
         transaction.ToAccountId.Should().BeNull();
         transaction.Amount.Should().Be(amount);
         transaction.Type.Should().Be(TransactionType.Withdrawal);
-        transaction.Status.Should().Be(AccountTransactionStatus.Completed);
+        transaction.Status.Should().Be(AccountTransactionStatus.Pending);
     }
 
     [Fact]
