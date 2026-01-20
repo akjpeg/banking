@@ -1,6 +1,6 @@
 {
   "info": {
-    "_postman_id": "66324354-6229-497f-be72-8fbf52130d2c",
+    "_postman_id": "37ff34f0-05fb-443d-bedd-6223369a8576",
     "name": "banking",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
     "_exporter_id": "27003302"
@@ -89,7 +89,7 @@
       ]
     },
     {
-      "name": "user operations",
+      "name": "user account operations",
       "item": [
         {
           "name": "info",
@@ -164,61 +164,6 @@
         },
         {
           "name": "deposit",
-          "request": {
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"amount\": 500\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{baseUrl}}/api/Accounts/me/deposit",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "Accounts",
-                "me",
-                "deposit"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "deposit Copy",
-          "event": [
-            {
-              "listen": "prerequest",
-              "script": {
-                "exec": [
-                  "pm.sendRequest({\r",
-                  "    url: pm.variables.get(\"baseUrl\") + \"/api/accounts/me/deposit\",\r",
-                  "    method: \"POST\",\r",
-                  "    header: {\r",
-                  "        \"Authorization\": \"Bearer \" + pm.environment.get(\"userToken\"),\r",
-                  "        \"Content-Type\": \"application/json\"\r",
-                  "    },\r",
-                  "    body: {\r",
-                  "        mode: \"raw\",\r",
-                  "        raw: JSON.stringify({ amount: 10 })\r",
-                  "    }\r",
-                  "}, function (err, res) {\r",
-                  "    console.log(\"First request:\", res.status);\r",
-                  "});"
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
           "request": {
             "method": "POST",
             "header": [],
