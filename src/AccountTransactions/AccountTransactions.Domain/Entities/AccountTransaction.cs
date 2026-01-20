@@ -31,7 +31,7 @@ public class AccountTransaction
             FromAccountId = null,
             Amount = amount,
             Type = TransactionType.Deposit,
-            Status = AccountTransactionStatus.Completed,
+            Status = AccountTransactionStatus.Pending,
             CreatedAt = DateTime.UtcNow
         };
     }
@@ -49,7 +49,7 @@ public class AccountTransaction
             ToAccountId = null,
             Amount = amount,
             Type = TransactionType.Withdrawal,
-            Status = AccountTransactionStatus.Completed,
+            Status = AccountTransactionStatus.Pending,
             CreatedAt = DateTime.UtcNow
         };
     }
