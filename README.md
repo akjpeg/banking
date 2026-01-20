@@ -8,8 +8,6 @@ Uma API bancária simples construída com .NET 10 para gerenciamento de contas e
 - **Depósitos e Saques** - Adicionar ou retirar fundos das contas
 - **Transferências** - Transferir dinheiro entre contas
 - **Histórico de Transações** - Visualizar todas as transações da conta
-- **Controle de Concorrência** - Bloqueio otimista para prevenir condições de corrida
-- **Autenticação JWT** - Endpoints de API seguros
 
 ## Tecnologias
 
