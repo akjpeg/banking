@@ -2,8 +2,9 @@
 
 public interface ITransactionRecorder
 {
-    Task RecordDepositAsync(Guid accountId, decimal amount);
-    Task RecordWithdrawalAsync(Guid accountId, decimal amount);
+    Task<Guid> RecordDepositAsync(Guid accountId, decimal amount);
+    Task<Guid> RecordWithdrawalAsync(Guid accountId, decimal amount);
+    Task MarkAccountOperationCompletedAsync(Guid transactionId);
     Task<TransferResult> RecordTransferAsync(Guid fromAccountId, Guid toAccountId, decimal amount);
     Task MarkTransferCompletedAsync(Guid fromTransactionId, Guid toTransactionId);
     Task MarkTransferFailedAsync(Guid fromTransactionId, Guid toTransactionId);

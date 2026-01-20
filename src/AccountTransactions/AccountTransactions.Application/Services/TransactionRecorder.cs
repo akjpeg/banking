@@ -14,17 +14,31 @@ public class TransactionRecorder : ITransactionRecorder
         _repository = repository;
     }
 
-    public async Task RecordDepositAsync(Guid accountId, decimal amount)
+    public async Task<Guid> RecordDepositAsync(Guid accountId, decimal amount)
     {
         var transaction = AccountTransaction.CreateDeposit(accountId, amount);
         await _repository.AddAsync(transaction);
         await _repository.SaveChangesAsync();
+
+        return transaction.Id;
     }
 
-    public async Task RecordWithdrawalAsync(Guid accountId, decimal amount)
+    public async Task<Guid> RecordWithdrawalAsync(Guid accountId, decimal amount)
     {
         var transaction = AccountTransaction.CreateWithdrawal(accountId, amount);
         await _repository.AddAsync(transaction);
+        await _repository.SaveChangesAsync();
+        
+        return transaction.Id;
+    }
+
+    public async Task MarkAccountOperationCompletedAsync(Guid transactionId)
+    {
+        var transaction = await _repository.GetByIdAsync(transactionId)
+            ?? throw new DomainException($"Transaction {transactionId} not found");
+        
+        transaction.MarkCompleted();
+        await _repository.UpdateAsync(transaction);
         await _repository.SaveChangesAsync();
     }
 

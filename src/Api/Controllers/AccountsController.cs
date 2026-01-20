@@ -150,15 +150,16 @@ public class AccountsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetTransactions()
     {
-        var accountId = User.GetAccountId();
-        var account = await _accountService.GetByIdAsync(accountId);
-
-        if (account == null)
-            return NotFound();
-
-        var transactions = await _transactionRecorder.GetByAccountIdAsync(accountId);
-
-        return Ok(transactions);
+        try
+        {
+            var accountId = User.GetAccountId();
+            var transactions = await _accountService.GetAccountTransactionsAsync(accountId);
+            return Ok(transactions);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound($"Could not find requested account");
+        }
     }
     
     /// <summary>
@@ -181,10 +182,7 @@ public class AccountsController : ControllerBase
         try
         {
             var accountId = User.GetAccountId();
-            await _accountService.CreditAsync(accountId, request.Amount);
-            await _transactionRecorder.RecordDepositAsync(accountId, request.Amount);
-        
-            var account = await _accountService.GetByIdAsync(accountId);
+            var account = await _accountService.CreditAsync(accountId, request.Amount);
             return Ok(account);
         }
         catch (DomainException ex)
@@ -213,10 +211,7 @@ public class AccountsController : ControllerBase
         try
         {
             var accountId = User.GetAccountId();
-            await _accountService.DebitAsync(accountId, request.Amount);
-            await _transactionRecorder.RecordWithdrawalAsync(accountId, request.Amount);
-        
-            var account = await _accountService.GetByIdAsync(accountId);
+            var account = await _accountService.DebitAsync(accountId, request.Amount);
             return Ok(account);
         }
         catch (DomainException ex)

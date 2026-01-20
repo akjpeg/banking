@@ -10,8 +10,9 @@ public interface IAccountService
     Task<AccountDto?> LoginAsync(string email, string password);
     Task<bool> ExistsAsync(Guid id);
     Task<bool> HasSufficientBalanceAsync(Guid accountId, decimal amount);
-    Task DebitAsync(Guid accountId, decimal amount);
-    Task CreditAsync(Guid accountId, decimal amount);
+    Task<IReadOnlyList<TransactionDto>> GetAccountTransactionsAsync(Guid accountId);
+    Task<AccountDto> DebitAsync(Guid accountId, decimal amount);
+    Task<AccountDto> CreditAsync(Guid accountId, decimal amount);
     Task DeleteAsync(Guid accountId);
 }
 

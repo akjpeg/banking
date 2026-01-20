@@ -8,10 +8,12 @@ namespace Accounts.Application.Services;
 public class AccountService : IAccountService
 {
     private readonly IAccountRepository _repository;
+    private readonly ITransactionRecorder _transactionRecorder;
 
-    public AccountService(IAccountRepository repository)
+    public AccountService(IAccountRepository repository, ITransactionRecorder transactionRecorder)
     {
         _repository = repository;
+        _transactionRecorder = transactionRecorder;
     }
 
     public async Task<AccountDto?> GetByIdAsync(Guid id)
@@ -79,25 +81,46 @@ public class AccountService : IAccountService
         var account = await _repository.GetByIdAsync(accountId);
         return account != null && account.Balance >= amount;
     }
+
+    public async Task<IReadOnlyList<TransactionDto>> GetAccountTransactionsAsync(Guid accountId)
+    {
+        var account = await GetByIdAsync(accountId);
+        
+        if (account == null)
+            throw new KeyNotFoundException($"Account {accountId} not found");
+        
+        var transactions = await _transactionRecorder.GetByAccountIdAsync(accountId);
+
+        return transactions;
+    }
     
-    public async Task DebitAsync(Guid accountId, decimal amount)
+    public async Task<AccountDto> DebitAsync(Guid accountId, decimal amount)
     {
         var account = await _repository.GetByIdAsync(accountId)
                       ?? throw new DomainException($"Account {accountId} not found");
 
         account.Debit(amount);
         await _repository.UpdateAsync(account);
+        var transactionId = await _transactionRecorder.RecordWithdrawalAsync(accountId, amount);
+        await _transactionRecorder.MarkAccountOperationCompletedAsync(transactionId);
+        
         await _repository.SaveChangesAsync();
+
+        return MapToDto(account);
     }
 
-    public async Task CreditAsync(Guid accountId, decimal amount)
+    public async Task<AccountDto> CreditAsync(Guid accountId, decimal amount)
     {
         var account = await _repository.GetByIdAsync(accountId)
                       ?? throw new DomainException($"Account {accountId} not found");
 
         account.Credit(amount);
         await _repository.UpdateAsync(account);
+        var transactionId = await _transactionRecorder.RecordDepositAsync(accountId, amount);
+        await _transactionRecorder.MarkAccountOperationCompletedAsync(transactionId);
         await _repository.SaveChangesAsync();
+        
+        return MapToDto(account);
     }
 
     public async Task DeleteAsync(Guid accountId)
