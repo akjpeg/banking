@@ -1,5 +1,4 @@
-﻿// tests/AccountTransactions.Application.Tests/Services/TransactionRecorderTests.cs
-using AccountTransactions.Application.Interfaces;
+﻿using AccountTransactions.Application.Interfaces;
 using AccountTransactions.Application.Services;
 using AccountTransactions.Domain.Entities;
 using AccountTransactions.Domain.Enums;
@@ -43,7 +42,7 @@ public class TransactionRecorderTests
         capturedTransaction!.AccountId.Should().Be(accountId);
         capturedTransaction.Amount.Should().Be(amount);
         capturedTransaction.Type.Should().Be(TransactionType.Deposit);
-        capturedTransaction.Status.Should().Be(AccountTransactionStatus.Completed);
+        capturedTransaction.Status.Should().Be(AccountTransactionStatus.Pending);
     }
 
     [Fact]
@@ -115,7 +114,7 @@ public class TransactionRecorderTests
         capturedTransaction!.AccountId.Should().Be(accountId);
         capturedTransaction.Amount.Should().Be(amount);
         capturedTransaction.Type.Should().Be(TransactionType.Withdrawal);
-        capturedTransaction.Status.Should().Be(AccountTransactionStatus.Completed);
+        capturedTransaction.Status.Should().Be(AccountTransactionStatus.Pending);
     }
 
     [Fact]
@@ -541,7 +540,7 @@ public class TransactionRecorderTests
         dto.ToAccountId.Should().Be(deposit.ToAccountId);
         dto.Amount.Should().Be(deposit.Amount);
         dto.Type.Should().Be("Deposit");
-        dto.Status.Should().Be("Completed");
+        dto.Status.Should().Be("Pending");
         dto.CreatedAt.Should().Be(deposit.CreatedAt);
     }
 
